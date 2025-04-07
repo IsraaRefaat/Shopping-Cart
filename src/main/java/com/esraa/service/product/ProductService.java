@@ -52,7 +52,7 @@ public class ProductService implements IProductService{
 
     @Override
     public List<Product> getProductsByCategoryAndBrand(String category, String brand) {
-        return productRepo.finByCategoryAndBrand(category,brand);
+        return productRepo.findByCategoryNameAndBrand(category,brand);
     }
 
     @Override
