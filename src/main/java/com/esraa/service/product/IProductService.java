@@ -2,14 +2,15 @@ package com.esraa.service.product;
 
 import com.esraa.exception.ProductNotFoundException;
 import com.esraa.model.Product;
+import com.esraa.model.ProductDTO;
 
 import java.util.List;
 
 public interface IProductService {
 
-    Product addProduct(Product product);
+    ProductDTO addProduct(ProductDTO product);
+    ProductDTO updateProduct(Long productId, ProductDTO product);
     Product getProduct(Long id) throws ProductNotFoundException;
-    void updateProduct(Product product);
     void deleteProduct(Long id);
 
     List<Product> getAllProducts();

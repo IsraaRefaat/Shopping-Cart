@@ -1,21 +1,71 @@
 package com.esraa.service.product;
 
+import com.esraa.dao.CategoryRepo;
 import com.esraa.dao.ProductRepo;
 import com.esraa.exception.ProductNotFoundException;
+import com.esraa.model.Category;
 import com.esraa.model.Product;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.esraa.model.ProductDTO;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class ProductService implements IProductService{
-    @Autowired
-    private ProductRepo productRepo;
+
+    private final ProductRepo productRepo;
+    private final CategoryRepo categoryRepo;
 
     @Override
-    public Product addProduct(Product product) {
-        return productRepo.save(product);
+    public ProductDTO addProduct(ProductDTO productDTO) {
+
+        Product product= createProduct(productDTO);
+
+        //check if the category exist in db
+        Category category = Optional.ofNullable(categoryRepo.findByName(productDTO.getCategory().getName()))
+                .orElseGet(
+                        ()->
+                        {
+                            Category newCategory = new Category(productDTO.getCategory().getName());
+                            return categoryRepo.save(newCategory);
+                        }
+                );
+
+        product.setCategory(category);
+        productRepo.save(product);
+
+        return productDTO;
+    }
+
+    @Override
+    public ProductDTO updateProduct(Long productId, ProductDTO productDTO) {
+
+        //Check if the product exists in db
+        Product product = Optional.ofNullable(productRepo.findById(productId))
+                .orElseGet(
+                        ()->{
+                            Product newProduct = createProduct(productDTO);
+                            newProduct.setCategory(productDTO.getCategory());
+                            return productRepo.save(newProduct);
+                        }
+
+                );
+
+    }
+
+    private Product createProduct(ProductDTO productDTO) {
+        Product product = new Product();
+        product.setName(productDTO.getName());
+        product.setPrice(productDTO.getPrice());
+        product.setDescription(productDTO.getDescription());
+        product.setBrand(productDTO.getBrand());
+        product.setImages(productDTO.getImages());
+        product.setQuantity(productDTO.getQuantity());
+
+        return product;
     }
 
     @Override
@@ -24,10 +74,8 @@ public class ProductService implements IProductService{
                 .orElseThrow(()-> new ProductNotFoundException("Product not found!"));
     }
 
-    @Override
-    public void updateProduct(Product product) {
-        productRepo.save(product);
-    }
+
+
 
     @Override
     public void deleteProduct(Long id) {
@@ -72,6 +120,6 @@ public class ProductService implements IProductService{
 
     @Override
     public Long CountProductsByBrandAndName(String brand, String name) {
-        return productRepo.count();
+        return productRepo.countByBrandAndName(brand,name);
     }
 }
